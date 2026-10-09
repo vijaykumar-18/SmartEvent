@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 import api from '../api/axios';
 import EventCard from '../components/EventCard';
 
-const CATEGORIES = ['All', 'Music', 'Tech', 'Sports', 'Business'];
+const CATEGORIES = ['All', 'Music', 'Tech', 'Sports', 'Business', 'Food & Drink'];
 
 export default function Home() {
   const [events, setEvents] = useState([]);

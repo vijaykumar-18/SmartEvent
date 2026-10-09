@@ -11,6 +11,13 @@ import BookingConfirmation from './pages/BookingConfirmation';
 import BookingHistory from './pages/BookingHistory';
 import Tickets from './pages/Tickets';
 import Notifications from './pages/Notifications';
+import {
+  OrganizerDashboard,
+  OrganizerEvents,
+  OrganizerEventForm,
+  OrganizerEventBookings,
+} from './pages/OrganizerPages';
+import AdminDashboard from './pages/AdminDashboard';
 
 export default function App() {
   return (
@@ -28,9 +35,21 @@ export default function App() {
               {/* Protected User Endpoints */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/confirmation" element={<BookingConfirmation />} />
+                <Route path="/notifications" element={<Notifications />} />
+              </Route>
+              <Route element={<ProtectedRoute roles={['USER']} />}>
                 <Route path="/bookings" element={<BookingHistory />} />
                 <Route path="/tickets" element={<Tickets />} />
-                <Route path="/notifications" element={<Notifications />} />
+              </Route>
+              <Route element={<ProtectedRoute roles={['ORGANIZER']} />}>
+                <Route path="/organizer" element={<OrganizerDashboard />} />
+                <Route path="/organizer/events" element={<OrganizerEvents />} />
+                <Route path="/organizer/events/new" element={<OrganizerEventForm />} />
+                <Route path="/organizer/events/:eventId/edit" element={<OrganizerEventForm />} />
+                <Route path="/organizer/events/:eventId/bookings" element={<OrganizerEventBookings />} />
+              </Route>
+              <Route element={<ProtectedRoute roles={['ADMIN']} />}>
+                <Route path="/admin/*" element={<AdminDashboard />} />
               </Route>
             </Routes>
           </main>

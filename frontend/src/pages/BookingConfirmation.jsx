@@ -9,13 +9,21 @@ export default function BookingConfirmation() {
 
   if (!booking) return <Navigate to="/" replace />;
 
+  const ticketCount = booking.ticket_quantity || booking.tickets?.length || 0;
   return (
     <div className="max-w-2xl mx-auto px-4 py-12 text-center">
       <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
       <h1 className="text-2xl font-bold text-slate-900">Booking Confirmed!</h1>
-      <p className="text-sm text-slate-600 mt-1">
-        Booking Reference #{booking.id} — Total: ${booking.total_price.toFixed(2)}
-      </p>
+      <p className="text-sm text-slate-600 mt-1">Booking Reference #{booking.id}</p>
+
+      <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-left">
+        <p className="text-sm font-semibold text-emerald-800">Tickets confirmed</p>
+        {booking.event?.title && <p className="mt-1 text-sm text-emerald-700">{booking.event.title}</p>}
+        <div className="mt-4">
+          <p className="text-xs text-slate-600">Tickets confirmed</p>
+          <p className="mt-1 text-lg font-bold text-slate-900">{ticketCount}</p>
+        </div>
+      </div>
 
       <div className="mt-8 space-y-4">
         {booking.tickets.map((t) => (

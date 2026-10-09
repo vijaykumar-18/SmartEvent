@@ -8,7 +8,7 @@ router = APIRouter(prefix="/api/tickets", tags=["Tickets"])
 
 @router.get("/my-tickets", response_model=List[schemas.TicketResponse])
 def get_user_tickets(
-    current_user: models.User = Depends(auth.get_current_user),
+    current_user: models.User = Depends(auth.require_roles(models.UserRole.USER)),
     db: Session = Depends(get_db)
 ):
     tickets = (
@@ -50,6 +50,8 @@ def verify_ticket(ticket_code: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Invalid ticket code")
     if ticket.booking.booking_status != models.BookingStatus.CONFIRMED:
         raise HTTPException(status_code=400, detail="Ticket is not valid for entry")
+    if ticket.booking.event.event_status == models.EventStatus.CANCELLED:
+        raise HTTPException(status_code=400, detail="The event has been cancelled")
     return {
         "valid": True,
         "ticket_code": ticket.ticket_code,

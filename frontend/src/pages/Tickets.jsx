@@ -40,7 +40,7 @@ function TicketCard({ ticket }) {
         <h2 className="mt-1 text-lg font-bold text-slate-900">{ticket.event?.title || 'Event ticket'}</h2>
         {ticket.event && (
           <>
-            <p className="mt-1 text-sm text-slate-600">{ticket.event.location}</p>
+            <p className="mt-1 text-sm text-slate-600">{ticket.event.venue}, {ticket.event.location}</p>
             <p className="text-sm text-slate-600">{new Date(ticket.event.event_date).toLocaleString()}</p>
           </>
         )}

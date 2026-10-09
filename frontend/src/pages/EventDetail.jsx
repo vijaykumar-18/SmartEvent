@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, MapPin } from 'lucide-react';
 import api from '../api/axios';
 import { AuthContext } from '../context/AuthContext';
+import { formatINR } from '../utils/currency';
 
 export default function EventDetail() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export default function EventDetail() {
   const [eventLoading, setEventLoading] = useState(true);
   const [eventError, setEventError] = useState('');
   const [error, setError] = useState('');
+  const canBook = !user || user.role === 'USER';
 
   useEffect(() => {
     api.get(`/events/${id}`)
@@ -54,7 +56,7 @@ export default function EventDetail() {
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <img
-          src={event.banner_image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80'}
+          src={event.banner_image || 'https://images.unsplash.com/photo-1506157786151-b8491531f063?w=1200&auto=format&fit=crop&q=80'}
           alt={event.title}
           className="w-full h-80 object-cover"
         />
@@ -65,6 +67,20 @@ export default function EventDetail() {
               {event.category}
             </span>
             <h1 className="text-3xl font-bold text-slate-900">{event.title}</h1>
+            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${
+              event.event_status === 'CANCELLED'
+                ? 'bg-rose-100 text-rose-700'
+                : event.event_status === 'COMPLETED'
+                  ? 'bg-slate-100 text-slate-700'
+                  : event.event_status === 'ONGOING'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-blue-100 text-blue-700'
+            }`}>{event.event_status}</span>
+            {event.event_status === 'CANCELLED' && (
+              <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                This event has been cancelled. Ticket booking is unavailable.
+              </p>
+            )}
             
             <div className="flex flex-wrap gap-4 text-sm text-slate-600">
               <div className="flex items-center gap-1.5">
@@ -74,6 +90,10 @@ export default function EventDetail() {
               <div className="flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-blue-600" />
                 <span>{event.location}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-blue-600" />
+                <span>{event.venue}</span>
               </div>
             </div>
 
@@ -89,10 +109,10 @@ export default function EventDetail() {
             <div>
               <div className="flex justify-between items-baseline mb-4">
                 <span className="text-sm text-slate-500">Price per ticket</span>
-                <span className="text-2xl font-black text-slate-900">${event.ticket_price.toFixed(2)}</span>
+                <span className="text-2xl font-black text-slate-900">{formatINR(event.ticket_price)}</span>
               </div>
 
-              <div className="mb-4">
+              {canBook && event.event_status === 'UPCOMING' && <div className="mb-4">
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Select Quantity</label>
                 <input
                   type="number"
@@ -105,25 +125,31 @@ export default function EventDetail() {
                 <span className="text-[11px] text-slate-400 mt-1 block">
                   Available tickets: {event.available_tickets}
                 </span>
-              </div>
+              </div>}
 
-              <div className="border-t border-slate-200 pt-3 mb-6">
+              {canBook && event.event_status === 'UPCOMING' && <div className="border-t border-slate-200 pt-3 mb-6">
                 <div className="flex justify-between font-bold text-slate-800 text-sm">
                   <span>Total Amount</span>
-                  <span>${(event.ticket_price * qty).toFixed(2)}</span>
+                  <span>{formatINR(event.ticket_price * qty)}</span>
                 </div>
-              </div>
+              </div>}
 
               {error && <p className="text-xs text-rose-600 mb-4">{error}</p>}
             </div>
 
-            <button
+            {canBook && event.event_status === 'UPCOMING' ? <button
               onClick={handleBooking}
               disabled={bookingLoading || event.available_tickets <= 0}
               className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-sm transition disabled:opacity-50"
             >
               {event.available_tickets <= 0 ? 'Sold Out' : bookingLoading ? 'Reserving...' : 'Book Tickets Now'}
-            </button>
+            </button> : <p className="text-center text-sm font-semibold text-slate-600">
+              {user && user.role !== 'USER'
+                ? 'Ticket booking is available to user accounts.'
+                : event.event_status === 'CANCELLED'
+                  ? 'This event has been cancelled.'
+                  : 'Ticket booking is closed for this event.'}
+            </p>}
           </div>
         </div>
       </div>

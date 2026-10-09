@@ -20,10 +20,20 @@ export default function Navbar() {
           <Link to="/" className="text-sm font-medium text-slate-600 hover:text-blue-600">Discover</Link>
           {user ? (
             <>
-              <Link to="/bookings" className="text-sm font-medium text-slate-600 hover:text-blue-600 flex items-center gap-1">
-                <Ticket className="w-4 h-4" /> Bookings
-              </Link>
-              <Link to="/tickets" className="text-sm font-medium text-slate-600 hover:text-blue-600">Tickets</Link>
+              {user.role === 'USER' && (
+                <>
+                  <Link to="/bookings" className="text-sm font-medium text-slate-600 hover:text-blue-600 flex items-center gap-1">
+                    <Ticket className="w-4 h-4" /> Bookings
+                  </Link>
+                  <Link to="/tickets" className="text-sm font-medium text-slate-600 hover:text-blue-600">Tickets</Link>
+                </>
+              )}
+              {user.role === 'ORGANIZER' && (
+                <Link to="/organizer" className="text-sm font-medium text-slate-600 hover:text-blue-600">Organizer</Link>
+              )}
+              {user.role === 'ADMIN' && (
+                <Link to="/admin" className="text-sm font-medium text-slate-600 hover:text-blue-600">Admin dashboard</Link>
+              )}
               <NotificationDropdown />
               <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
                 <span className="text-sm font-semibold text-slate-700 flex items-center gap-1">

@@ -1,16 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Tag } from 'lucide-react';
+import { formatINR } from '../utils/currency';
 
 export default function EventCard({ event }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col hover:shadow-md transition">
      <img
-  src={event.banner_image || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&auto=format&fit=crop&q=60'}
+  src={event.banner_image || 'https://images.unsplash.com/photo-1506157786151-b8491531f063?w=800&auto=format&fit=crop&q=60'}
   alt={event.title}
   onError={(e) => {
     e.target.onerror = null;
-    e.target.src = 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=60';
+    e.target.src = 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&auto=format&fit=crop&q=60';
   }}
   className="w-full h-44 object-cover"
 />
@@ -25,6 +26,10 @@ export default function EventCard({ event }) {
           </div>
           <div className="flex items-center gap-1.5">
             <MapPin className="w-3.5 h-3.5" />
+            <span className="line-clamp-1">{event.venue}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5" />
             <span className="line-clamp-1">{event.location}</span>
           </div>
         </div>
@@ -32,7 +37,7 @@ export default function EventCard({ event }) {
         <div className="flex items-center justify-between pt-3 border-t border-slate-100">
           <div>
             <span className="text-xs text-slate-400 block">Price</span>
-            <span className="font-bold text-slate-900">${event.ticket_price.toFixed(2)}</span>
+            <span className="font-bold text-slate-900">{formatINR(event.ticket_price)}</span>
           </div>
           <Link
             to={`/events/${event.id}`}

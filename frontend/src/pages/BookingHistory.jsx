@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api, { assetBaseUrl } from '../api/axios';
 import { Link } from 'react-router-dom';
+import { formatINR } from '../utils/currency';
 
 export default function BookingHistory() {
   const [bookings, setBookings] = useState([]);
@@ -56,7 +57,7 @@ export default function BookingHistory() {
                 </div>
                 <div className="text-right">
                   <span className="text-xs text-slate-400 block">Total</span>
-                  <span className="font-bold text-slate-900">${b.total_price.toFixed(2)}</span>
+                  <span className="font-bold text-slate-900">{formatINR(b.total_price)}</span>
                   {b.booking_status === 'CONFIRMED' && new Date(b.event.event_date) > new Date() && (
                     <button
                       type="button"
@@ -71,7 +72,7 @@ export default function BookingHistory() {
               </div>
 
               <p className="mt-3 text-sm text-slate-500">
-                {b.event.location} · {new Date(b.event.event_date).toLocaleString()}
+                {b.event.venue}, {b.event.location} · {new Date(b.event.event_date).toLocaleString()}
               </p>
               {b.booking_status === 'CANCELLED' ? (
                 <p className="mt-4 text-sm text-slate-500">This booking was cancelled; its tickets are no longer valid.</p>

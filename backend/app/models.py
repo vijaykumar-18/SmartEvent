@@ -9,6 +9,17 @@ class BookingStatus(str, enum.Enum):
     CONFIRMED = "CONFIRMED"
     CANCELLED = "CANCELLED"
 
+class UserRole(str, enum.Enum):
+    USER = "USER"
+    ORGANIZER = "ORGANIZER"
+    ADMIN = "ADMIN"
+
+class EventStatus(str, enum.Enum):
+    UPCOMING = "UPCOMING"
+    ONGOING = "ONGOING"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
 class NotificationType(str, enum.Enum):
     EVENT = "EVENT"
     BOOKING = "BOOKING"
@@ -21,10 +32,12 @@ class User(Base):
     username = Column(String(50), unique=True, index=True, nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
+    role = Column(Enum(UserRole, native_enum=False), default=UserRole.USER, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     bookings = relationship("Booking", back_populates="user")
     notifications = relationship("Notification", back_populates="user")
+    organized_events = relationship("Event", back_populates="organizer")
 
 class Event(Base):
     __tablename__ = "events"
@@ -32,16 +45,25 @@ class Event(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(150), index=True, nullable=False)
     description = Column(String, nullable=False)
-    category = Column(String(50), index=True, nullable=False)  # Music / Tech / Sports / Business
+    category = Column(String(50), index=True, nullable=False)
     location = Column(String(150), nullable=False)
+    venue = Column(String(150), nullable=False, default="Main venue")
     event_date = Column(DateTime, nullable=False)
+    event_end_date = Column(DateTime, nullable=True)
     ticket_price = Column(Float, nullable=False)
     total_tickets = Column(Integer, default=100)
     available_tickets = Column(Integer, default=100)
     banner_image = Column(String, nullable=True)
+    organizer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    event_status = Column(
+        Enum(EventStatus, native_enum=False),
+        default=EventStatus.UPCOMING,
+        nullable=False,
+    )
     created_at = Column(DateTime, default=datetime.utcnow)
 
     bookings = relationship("Booking", back_populates="event")
+    organizer = relationship("User", back_populates="organized_events")
 
 class Booking(Base):
     __tablename__ = "bookings"

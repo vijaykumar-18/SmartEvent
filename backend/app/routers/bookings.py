@@ -18,7 +18,7 @@ os.makedirs(QR_FOLDER, exist_ok=True)
 @router.post("", response_model=schemas.BookingResponse, status_code=status.HTTP_201_CREATED)
 def book_tickets(
     payload: schemas.BookingCreate,
-    current_user: models.User = Depends(auth.get_current_user),
+    current_user: models.User = Depends(auth.require_roles(models.UserRole.USER)),
     db: Session = Depends(get_db)
 ):
     if payload.ticket_quantity <= 0:
@@ -38,6 +38,8 @@ def book_tickets(
     )
     if inventory_update.rowcount != 1:
         event = db.query(models.Event).filter(models.Event.id == payload.event_id).first()
+        if event.event_status != models.EventStatus.UPCOMING:
+            raise HTTPException(status_code=400, detail="Tickets are only available for upcoming events")
         if not event:
             raise HTTPException(status_code=404, detail="Event not found")
         raise HTTPException(
@@ -85,10 +87,21 @@ def book_tickets(
     notification = models.Notification(
         user_id=current_user.id,
         title="Booking Confirmed!",
-        message=f"You booked {payload.ticket_quantity} tickets for '{event.title}'. Total: ${total_price:.2f}",
+        message=f"You booked {payload.ticket_quantity} tickets for '{event.title}'. Total: ₹{total_price:,.2f}",
         type=models.NotificationType.BOOKING
     )
     db.add(notification)
+    if event.organizer_id is not None:
+        db.add(models.Notification(
+            user_id=event.organizer_id,
+            title="New ticket booking",
+            message=(
+                f"{current_user.username} booked {payload.ticket_quantity} ticket(s) "
+                f"for '{event.title}' (booking #{new_booking.id}). "
+                f"Confirmed revenue: ₹{total_price:,.2f}."
+            ),
+            type=models.NotificationType.BOOKING,
+        ))
 
     db.commit()
     db.refresh(new_booking)
@@ -96,7 +109,7 @@ def book_tickets(
 
 @router.get("/my-bookings", response_model=List[schemas.BookingResponse])
 def get_user_bookings(
-    current_user: models.User = Depends(auth.get_current_user),
+    current_user: models.User = Depends(auth.require_roles(models.UserRole.USER)),
     db: Session = Depends(get_db)
 ):
     return (
@@ -109,7 +122,7 @@ def get_user_bookings(
 @router.post("/{booking_id}/cancel", response_model=schemas.BookingResponse)
 def cancel_booking(
     booking_id: int,
-    current_user: models.User = Depends(auth.get_current_user),
+    current_user: models.User = Depends(auth.require_roles(models.UserRole.USER)),
     db: Session = Depends(get_db)
 ):
     booking = (
@@ -150,6 +163,16 @@ def cancel_booking(
         message=f"Your booking for '{booking.event.title}' was cancelled.",
         type=models.NotificationType.BOOKING,
     ))
+    if booking.event.organizer_id is not None:
+        db.add(models.Notification(
+            user_id=booking.event.organizer_id,
+            title="Booking cancelled",
+            message=(
+                f"{current_user.username} cancelled booking #{booking.id} for "
+                f"'{booking.event.title}' ({booking.ticket_quantity} ticket(s))."
+            ),
+            type=models.NotificationType.BOOKING,
+        ))
     db.commit()
     db.refresh(booking)
     return booking
