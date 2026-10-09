@@ -16,7 +16,8 @@ Built with **FastAPI** for high-performance backend workflows and **React (Vite)
 - **Notification Center**: Automated booking confirmations and alert badges with read/unread status updates.
 - **Multi-role access**: USER, ORGANIZER, and ADMIN permissions enforced by role-bearing JWTs.
 - **Organizer tools**: Create and manage owned events, view attendee contact details and booking updates, and track confirmed/cancelled ticket counts and confirmed INR revenue.
-- **Admin analytics**: User/event/booking oversight, date-filtered sales trends, and role administration.
+- **Admin dashboard and analytics**: KPI summaries for users, events, tickets, bookings, and confirmed platform revenue; daily ticket sales, monthly booking trends, popular events, and top revenue-generating events.
+- **Admin controls**: Review all users, events, and bookings, and manage user roles.
 - **Event lifecycle**: Upcoming, ongoing, completed, and cancelled states with attendee notifications on updates/cancellations.
 - **India-ready listings**: INR pricing, required venue and Indian city fields, and Indian event sample listings.
 
@@ -86,3 +87,25 @@ Built with **FastAPI** for high-performance backend workflows and **React (Vite)
    ```
 
 Set `INITIAL_ADMIN_EMAIL` in `backend/.env` after registering the administrator account, then restart the backend to grant the initial ADMIN role.
+
+## 🛡️ Administrator Dashboard
+
+Sign in with an account assigned the `ADMIN` role and open `/admin`. The dashboard includes:
+
+- **Overview**: Platform KPI cards and summaries of daily ticket sales, monthly booking trends, event popularity, and event revenue.
+- **Analytics**: The same platform metrics with optional `From` and `To` date filters.
+- **Users**: User list with role management.
+- **Events**: Event list with venue, city, organizer, date, and status.
+- **Bookings**: Booking list with customer, event, ticket quantity, total, status, and date; filter bookings by date.
+
+All administrator API endpoints require an authenticated administrator account:
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/api/admin/analytics` | Platform totals and event/sales analytics. Accepts optional `start_date` and `end_date` query parameters. |
+| `GET` | `/api/admin/users` | List registered users. |
+| `PUT` | `/api/admin/users/{user_id}/role` | Change a user's role. |
+| `GET` | `/api/admin/events` | List events. |
+| `GET` | `/api/admin/bookings` | List bookings. Accepts optional `start_date` and `end_date` query parameters. |
+
+The analytics endpoint reports total registered users and events, confirmed-booking ticket and revenue totals, booking counts, daily ticket quantities, monthly confirmed-booking counts, and the most popular and highest-revenue events.
